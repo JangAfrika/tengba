@@ -712,32 +712,100 @@ async function loadInventory() {
 // Team (user profiles) — only the Director can register, edit,
 // remove a user, or change any password.
 // ---------------------------------------------------------------
+let editingUserId = null;
+
+function setUserFormMode(editing) {
+  document.getElementById('userFormTitle').textContent = editing ? 'Edit team member' : 'Register a team member';
+  document.getElementById('userFormHint').textContent = editing
+    ? 'Update this person\'s profile or reassign their role. Username and password can\'t be changed here — use Set Password for that.'
+    : 'Only the Director can create accounts. Review skills and qualifications first, then assign a role here — there is no self-registration.';
+  document.getElementById('userFormSubmitBtn').textContent = editing ? 'Save changes' : 'Create account';
+  document.getElementById('userFormCancelBtn').classList.toggle('hidden', !editing);
+  document.getElementById('uUsernameField').classList.toggle('hidden', editing);
+  document.getElementById('uPasswordField').classList.toggle('hidden', editing);
+  document.getElementById('uUsername').required = !editing;
+  document.getElementById('uPassword').required = !editing;
+}
+
+function startEditUser(user) {
+  editingUserId = user.UserId;
+  document.getElementById('uFullName').value = user['Full Name'] || '';
+  document.getElementById('uUsername').value = user.Username || '';
+  document.getElementById('uPassword').value = '';
+  document.getElementById('uDob').value = user['Date Of Birth'] || '';
+  document.getElementById('uGender').value = user.Gender || '';
+  document.getElementById('uPhone').value = user.Phone || '';
+  document.getElementById('uEmail').value = user.Email || '';
+  document.getElementById('uAddress').value = user.Address || '';
+  document.getElementById('uEmergencyName').value = user['Emergency Contact Name'] || '';
+  document.getElementById('uEmergencyPhone').value = user['Emergency Contact Phone'] || '';
+  document.getElementById('uEducation').value = user['Education History'] || '';
+  document.getElementById('uEmployment').value = user['Employment History'] || '';
+  document.getElementById('uSkills').value = user.Skills || '';
+  document.getElementById('uLanguages').value = user.Languages || '';
+  document.getElementById('uPositions').value = user['Positions Held & Responsibilities'] || '';
+  populateRoleDropdown();
+  document.getElementById('uRole').value = user.Role || '';
+
+  setUserFormMode(true);
+  const form = document.getElementById('userForm');
+  form.classList.remove('hidden');
+  const toggleBtn = document.getElementById('userFormToggleBtn');
+  toggleBtn.textContent = '✕ Close';
+  toggleBtn.classList.add('btn-add-open');
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function stopEditUser() {
+  editingUserId = null;
+  document.getElementById('userForm').reset();
+  setUserFormMode(false);
+}
+
+document.getElementById('userFormCancelBtn').addEventListener('click', function () {
+  stopEditUser();
+  closeForm('userForm', '[data-toggle="userForm"]');
+});
+
+document.getElementById('userFormToggleBtn').addEventListener('click', function () {
+  // Toggling the "+ Register User" button while an edit is in progress
+  // should drop the edit and go back to a blank create form.
+  if (editingUserId) stopEditUser();
+});
+
 document.getElementById('userForm').addEventListener('submit', async function (e) {
   e.preventDefault();
   const msg = document.getElementById('userMessage');
+  const profileFields = {
+    name: document.getElementById('uFullName').value.trim(),
+    role: document.getElementById('uRole').value,
+    dob: document.getElementById('uDob').value,
+    gender: document.getElementById('uGender').value.trim(),
+    phone: document.getElementById('uPhone').value.trim(),
+    email: document.getElementById('uEmail').value.trim(),
+    address: document.getElementById('uAddress').value.trim(),
+    emergencyName: document.getElementById('uEmergencyName').value.trim(),
+    emergencyPhone: document.getElementById('uEmergencyPhone').value.trim(),
+    education: document.getElementById('uEducation').value.trim(),
+    employment: document.getElementById('uEmployment').value.trim(),
+    skills: document.getElementById('uSkills').value.trim(),
+    languages: document.getElementById('uLanguages').value.trim(),
+    positions: document.getElementById('uPositions').value.trim()
+  };
+
   try {
-    const res = await api('adminCreateUser', {
-      name: document.getElementById('uFullName').value.trim(),
-      username: document.getElementById('uUsername').value.trim(),
-      password: document.getElementById('uPassword').value,
-      role: document.getElementById('uRole').value,
-      dob: document.getElementById('uDob').value,
-      gender: document.getElementById('uGender').value.trim(),
-      phone: document.getElementById('uPhone').value.trim(),
-      email: document.getElementById('uEmail').value.trim(),
-      address: document.getElementById('uAddress').value.trim(),
-      emergencyName: document.getElementById('uEmergencyName').value.trim(),
-      emergencyPhone: document.getElementById('uEmergencyPhone').value.trim(),
-      education: document.getElementById('uEducation').value.trim(),
-      employment: document.getElementById('uEmployment').value.trim(),
-      skills: document.getElementById('uSkills').value.trim(),
-      languages: document.getElementById('uLanguages').value.trim(),
-      positions: document.getElementById('uPositions').value.trim()
-    });
+    const res = editingUserId
+      ? await api('adminUpdateUser', Object.assign({ userId: editingUserId }, profileFields))
+      : await api('adminCreateUser', Object.assign({
+          username: document.getElementById('uUsername').value.trim(),
+          password: document.getElementById('uPassword').value
+        }, profileFields));
+
     if (!res.success) { showMessage(msg, res.message, 'error'); return; }
     showMessage(msg, res.message, 'success');
-    document.getElementById('userForm').reset();
-    closeForm('userForm', '[data-toggle="userForm"]');
+    const wasEditing = !!editingUserId;
+    stopEditUser();
+    if (!wasEditing) closeForm('userForm', '[data-toggle="userForm"]');
     loadUsers();
   } catch (err) { showMessage(msg, err.message, 'error'); }
 });
@@ -760,6 +828,7 @@ async function loadUsers() {
     if (isDirector) {
       const isSelf = state.user && u.UserId === state.user.userId;
       cells.push(
+        '<button class="btn btn-mini" data-edit-user="' + u.UserId + '">Edit</button> ' +
         '<button class="btn btn-mini" data-set-password="' + u.UserId + '">Set Password</button> ' +
         (isSelf ? '' : '<button class="btn btn-mini btn-bad" data-remove-user="' + u.UserId + '">Remove</button>')
       );
@@ -768,6 +837,14 @@ async function loadUsers() {
   });
 
   renderTableRich('usersTable', headers, rowObjs);
+
+  document.querySelectorAll('[data-edit-user]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const userId = btn.getAttribute('data-edit-user');
+      const user = state.users.find(function (u) { return u.UserId === userId; });
+      if (user) startEditUser(user);
+    });
+  });
 
   document.querySelectorAll('[data-set-password]').forEach(function (btn) {
     btn.addEventListener('click', async function () {
