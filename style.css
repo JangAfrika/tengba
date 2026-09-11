@@ -210,6 +210,8 @@ body:not(.authed) .sidebar { display: none; }
 .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; align-items: end; }
 .grid-form .span2 { grid-column: span 2; }
 .grid-form button { grid-column: 1 / -1; justify-self: start; margin-top: 4px; }
+.grid-form .form-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.grid-form .form-actions button { grid-column: auto; margin-top: 0; }
 @media (max-width: 560px) {
   .grid-form { grid-template-columns: 1fr; }
   .grid-form .span2 { grid-column: 1; }
