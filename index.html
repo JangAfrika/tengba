@@ -73,7 +73,7 @@
           </div>
         </div>
         <h2>Log in</h2>
-        <p class="hint">Contact IT Dep if you need access or a password reset.</p>
+        <p class="hint">Contact IT admin if you forget password.</p>
         <form id="loginForm" class="form-stack">
           <div class="field">
             <label for="loginUsername">Username</label>
@@ -96,7 +96,7 @@
       <section id="panel-overview" class="panel">
         <div class="surface">
           <h2>Team overview</h2>
-          <p class="hint">Activities, attendance, plans, and projects summary.</p>
+          <p class="hint">Summary of activities, attendance, plans, and projects.</p>
           <div class="table-wrap"><table id="overviewTable"><thead></thead><tbody></tbody></table></div>
         </div>
       </section>
@@ -131,7 +131,7 @@
         <h2>Daily Report</h2>
         <button type="button" class="btn btn-add" data-toggle="reportForm" data-label="+ Report Today's Work">+ Report Today's Work</button>
       </div>
-      <p class="hint">A quick daily record of what work was done</p>
+      <p class="hint">A quick daily record visible to the whole team.</p>
       <form id="reportForm" class="grid-form hidden">
         <div class="field"><label>Date</label><input type="date" id="repDate" /></div>
         <div class="field span2"><label>Work done</label><input type="text" id="repWork" placeholder="e.g. Turned windrows 1–3, watered nursery beds" required /></div>
@@ -171,7 +171,7 @@
           </select>
         </div>
         <div class="field span2"><label>Notes</label><input type="text" id="attNotes" /></div>
-        <button type="submit" class="btn btn-filled">Save attendance</button>
+        <button type="submit" class="btn btn-filled">Mark attendance</button>
       </form>
       <p class="msg" id="attendanceMessage"></p>
     </div>
@@ -188,7 +188,7 @@
         <h2>Receipts</h2>
         <button type="button" class="btn btn-add" data-toggle="receiptForm" data-label="+ Upload Receipt">+ Upload Receipt</button>
       </div>
-      <p class="hint">Files are recorded and logged below.</p>
+      <p class="hint">Files are logged below.</p>
       <form id="receiptForm" class="grid-form hidden">
         <div class="field"><label>Date</label><input type="date" id="rcDate" /></div>
         <div class="field">
@@ -222,7 +222,7 @@
         <h2>Plans</h2>
         <button type="button" class="btn btn-add" data-toggle="planForm" data-label="+ Submit Plan">+ Submit Plan</button>
       </div>
-      <p class="hint">Plans are reviewed by the Director for approval.</p>
+      <p class="hint">Submitted plans are subject to review.</p>
       <form id="planForm" class="grid-form hidden">
         <div class="field span2"><label>Title</label><input type="text" id="planTitle" required /></div>
         <div class="field span2"><label>Description</label><input type="text" id="planDescription" /></div>
@@ -243,7 +243,7 @@
         <h2>Projects</h2>
         <button type="button" class="btn btn-add" data-toggle="projectForm" data-label="+ Submit Project">+ Submit Project</button>
       </div>
-      <p class="hint">Projects are reviewed by the Director for approval.</p>
+      <p class="hint">Submitted projects are subject to review.</p>
       <form id="projectForm" class="grid-form hidden">
         <div class="field span2"><label>Title</label><input type="text" id="projectTitle" required /></div>
         <div class="field span2"><label>Description</label><input type="text" id="projectDescription" /></div>
@@ -316,14 +316,14 @@
   <section id="panel-team" class="panel hidden">
     <div class="surface director-only hidden" id="userFormCard">
       <div class="panel-head">
-        <h2>Register a team member</h2>
-        <button type="button" class="btn btn-add" data-toggle="userForm" data-label="+ Register User">+ Register User</button>
+        <h2 id="userFormTitle">Register a team member</h2>
+        <button type="button" class="btn btn-add" data-toggle="userForm" data-label="+ Register User" id="userFormToggleBtn">+ Register User</button>
       </div>
-      <p class="hint">Director creates accounts.</p>
+      <p class="hint" id="userFormHint">The Director can creates accounts.</p>
       <form id="userForm" class="grid-form hidden">
         <div class="field"><label>Full name</label><input type="text" id="uFullName" required /></div>
-        <div class="field"><label>Username</label><input type="text" id="uUsername" required autocomplete="off" /></div>
-        <div class="field"><label>Temporary password</label><input type="text" id="uPassword" required autocomplete="off" /></div>
+        <div class="field" id="uUsernameField"><label>Username</label><input type="text" id="uUsername" required autocomplete="off" /></div>
+        <div class="field" id="uPasswordField"><label>Temporary password</label><input type="text" id="uPassword" required autocomplete="off" /></div>
         <div class="field">
           <label>Role</label>
           <select id="uRole" required><option value="" disabled selected>Select a role…</option></select>
@@ -340,7 +340,10 @@
         <div class="field span2"><label>Skills</label><input type="text" id="uSkills" placeholder="Comma-separated" /></div>
         <div class="field span2"><label>Languages</label><input type="text" id="uLanguages" placeholder="Comma-separated" /></div>
         <div class="field span2"><label>Positions held in the garden & responsibilities</label><input type="text" id="uPositions" /></div>
-        <button type="submit" class="btn btn-filled">Create account</button>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-filled" id="userFormSubmitBtn">Create account</button>
+          <button type="button" class="btn btn-text hidden" id="userFormCancelBtn">Cancel edit</button>
+        </div>
       </form>
       <p class="msg" id="userMessage"></p>
     </div>
