@@ -1,430 +1,520 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TENGBA</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TENGBA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-<div class="app-shell">
+  <div class="app-shell">
 
-  <!-- ================= MOBILE TOP BAR (hamburger, small screens only) ================= -->
-  <header class="mobile-bar" id="mobileBar">
-    <button type="button" class="hamburger" id="hamburgerBtn" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div class="brand brand-mini">
-      <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
-      <span class="brand-title">TENGBA GARDEN</span>
-    </div>
-  </header>
-
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
-      <div class="brand-text">
-        <span class="brand-title">TENGBA</span>
-        <span class="brand-sub">Portal</span>
+    <!-- ================= MOBILE TOP BAR (hamburger, small screens only) ================= -->
+    <header class="mobile-bar" id="mobileBar">
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="brand brand-mini">
+        <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
+        <span class="brand-title">TENGBA GARDEN</span>
       </div>
-    </div>
+    </header>
 
-    <nav class="sidebar-nav" id="dashTabs">
-      <button class="tabbtn active" data-tab="overview">Overview</button>
-      <button class="tabbtn" data-tab="activity">Activity Log</button>
-      <button class="tabbtn" data-tab="report">Report</button>
-      <button class="tabbtn" data-tab="attendance">Attendance</button>
-      <button class="tabbtn" data-tab="receipts">Receipts</button>
-      <button class="tabbtn" data-tab="plans">Plans</button>
-      <button class="tabbtn" data-tab="projects">Projects</button>
-      <button class="tabbtn" data-tab="zones">Zones</button>
-      <button class="tabbtn" data-tab="inventory">Inventory</button>
-      <button class="tabbtn director-only hidden" data-tab="team">Team</button>
-      <button class="tabbtn" data-tab="profile">Profile</button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <span id="configWarning" class="chip chip-warn hidden">config.js not set</span>
-      <div id="userChip" class="user-chip hidden">
-        <span id="userAvatar" class="avatar"></span>
-        <span id="userLabel"></span>
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
+        <div class="brand-text">
+          <span class="brand-title">TENGBA GARDEN</span>
+          <span class="brand-sub">Portal</span>
+        </div>
       </div>
-      <button id="logoutBtn" class="btn btn-text btn-block hidden">Sign out</button>
-    </div>
-  </aside>
 
-  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+      <nav class="sidebar-nav" id="dashTabs">
+        <button class="tabbtn active" data-tab="overview">Overview</button>
+        <button class="tabbtn" data-tab="activity">Activity Log</button>
+        <button class="tabbtn" data-tab="report">Report</button>
+        <button class="tabbtn" data-tab="attendance">Attendance</button>
+        <button class="tabbtn" data-tab="receipts">Receipts</button>
+        <button class="tabbtn" data-tab="plans">Plans</button>
+        <button class="tabbtn" data-tab="projects">Projects</button>
+        <button class="tabbtn" data-tab="zones">Zones</button>
+        <button class="tabbtn" data-tab="inventory">Inventory</button>
+        <button class="tabbtn director-only hidden" data-tab="team">Team</button>
+        <button class="tabbtn director-only hidden" data-tab="audit">Audit Log</button>
+        <button class="tabbtn" data-tab="profile">Profile</button>
+      </nav>
 
-  <div class="content-area">
+      <div class="sidebar-footer">
+        <span id="configWarning" class="chip chip-warn hidden">config.js not set</span>
+        <div id="userChip" class="user-chip hidden">
+          <span id="userAvatar" class="avatar"></span>
+          <span id="userLabel"></span>
+        </div>
+        <button id="logoutBtn" class="btn btn-text btn-block hidden">Sign out</button>
+      </div>
+    </aside>
 
-    <!-- ================= AUTH SCREEN (login only — no self-registration) ================= -->
-    <main id="authScreen" class="auth-wrap">
-      <div class="surface auth-card">
-        <div class="brand auth-brand">
-          <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
-          <div class="brand-text">
-            <span class="brand-title">TENGBA GARDEN</span>
-            <span class="brand-sub">login</span>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <div class="content-area">
+
+      <!-- ================= AUTH SCREEN (login only — no self-registration) ================= -->
+      <main id="authScreen" class="auth-wrap">
+        <div class="surface auth-card">
+          <div class="brand auth-brand">
+            <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
+            <div class="brand-text">
+              <span class="brand-title">TENGBA GARDEN</span>
+              <span class="brand-sub">Activities Portal</span>
+            </div>
           </div>
+          <h2>Log in</h2>
+          <p class="hint">Contact IT admin if you need access or a password reset.</p>
+          <form id="loginForm" class="form-stack">
+            <div class="field">
+              <label for="loginUsername">Username</label>
+              <input type="text" id="loginUsername" required autocomplete="username" />
+            </div>
+            <div class="field">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-filled btn-block">Log in</button>
+            <p class="msg" id="loginMessage"></p>
+          </form>
         </div>
-        <h2>Log in</h2>
-        <p class="hint">Contact IT admin if you need access or a password reset.</p>
-        <form id="loginForm" class="form-stack">
-          <div class="field">
-            <label for="loginUsername">Username</label>
-            <input type="text" id="loginUsername" required autocomplete="username" />
+      </main>
+
+      <!-- ================= DASHBOARD ================= -->
+      <main id="dashboard" class="dash-wrap hidden">
+
+        <!-- OVERVIEW -->
+        <section id="panel-overview" class="panel">
+          <div class="surface">
+            <h2>Overview</h2>
+            <p class="hint">A snapshot across activity logs, daily reports, plans, and projects.</p>
+            <div class="card-grid stat-grid" id="overviewStats"></div>
           </div>
-          <div class="field">
-            <label for="loginPassword">Password</label>
-            <input type="password" id="loginPassword" required autocomplete="current-password" />
+
+          <div class="surface">
+            <h2>Recent activity</h2>
+            <div class="card-grid" id="overviewActivity"></div>
           </div>
-          <button type="submit" class="btn btn-filled btn-block">Log in</button>
-          <p class="msg" id="loginMessage"></p>
-        </form>
+
+          <div class="surface">
+            <h2>Recent reports</h2>
+            <div class="card-grid" id="overviewReports"></div>
+          </div>
+
+          <div class="surface">
+            <h2>Recent plans</h2>
+            <div class="card-grid" id="overviewPlans"></div>
+          </div>
+
+          <div class="surface">
+            <h2>Recent projects</h2>
+            <div class="card-grid" id="overviewProjects"></div>
+          </div>
+        </section>
+
+        <!-- ACTIVITY LOG -->
+        <section id="panel-activity" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>Activity Log</h2>
+              <button type="button" class="btn btn-add" data-toggle="activityForm" data-label="+ Log Activity">+ Log
+                Activity</button>
+            </div>
+            <form id="activityForm" class="grid-form hidden">
+              <div class="field"><label>Date</label><input type="date" id="actDate" /></div>
+              <div class="field"><label>Zone</label><select id="actZone">
+                  <option value="">—</option>
+                </select></div>
+              <div class="field span2"><label>Activity</label><input type="text" id="actActivity"
+                  placeholder="e.g. Windrow turning" required /></div>
+              <div class="field"><label>Personnel</label><input type="text" id="actPersonnel"
+                  placeholder="Defaults to you" /></div>
+              <div class="field span2"><label>Notes</label><input type="text" id="actNotes" /></div>
+              <button type="submit" class="btn btn-filled">Add entry</button>
+            </form>
+            <p class="msg" id="activityMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Recent activity</h2>
+            <div class="table-wrap">
+              <table id="activityTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- REPORT (daily work report — everyone reports what they did that day) -->
+        <section id="panel-report" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>Daily Report</h2>
+              <button type="button" class="btn btn-add" data-toggle="reportForm" data-label="+ Report Today's Work">+
+                Report Today's Work</button>
+            </div>
+            <p class="hint">A quick daily report.</p>
+            <form id="reportForm" class="grid-form hidden">
+              <div class="field"><label>Date</label><input type="date" id="repDate" /></div>
+              <div class="field span2"><label>Work done</label><input type="text" id="repWork"
+                  placeholder="e.g. Turned windrows 1–3, watered nursery beds" required /></div>
+              <div class="field span2"><label>Notes (optional)</label><input type="text" id="repNotes" /></div>
+              <button type="submit" class="btn btn-filled">Submit report</button>
+            </form>
+            <p class="msg" id="reportMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Daily reports</h2>
+            <div class="table-wrap">
+              <table id="reportsTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ATTENDANCE -->
+        <section id="panel-attendance" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>Attendance</h2>
+              <button type="button" class="btn btn-add" data-toggle="attendanceForm" data-label="+ Mark Attendance">+
+                Mark Attendance</button>
+            </div>
+            <form id="attendanceForm" class="grid-form hidden">
+              <div class="field"><label>Date</label><input type="date" id="attDate" /></div>
+              <div class="field"><label>Name</label><input type="text" id="attName" placeholder="Defaults to you" />
+              </div>
+              <div class="field"><label>Role</label><input type="text" id="attRole"
+                  placeholder="Defaults to your role" /></div>
+              <div class="field"><label>Time in</label><input type="time" id="attTimeIn" /></div>
+              <div class="field"><label>Time out</label><input type="time" id="attTimeOut" /></div>
+              <div class="field">
+                <label>Status</label>
+                <select id="attStatus">
+                  <option>Present</option>
+                  <option>Absent</option>
+                  <option>Half Day</option>
+                  <option>Sick Leave</option>
+                  <option>Annual Leave</option>
+                  <option>Public Holiday</option>
+                </select>
+              </div>
+              <div class="field span2"><label>Notes</label><input type="text" id="attNotes" /></div>
+              <button type="submit" class="btn btn-filled">Save attendance</button>
+            </form>
+            <p class="msg" id="attendanceMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Recent attendance</h2>
+            <div class="table-wrap">
+              <table id="attendanceTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECEIPTS -->
+        <section id="panel-receipts" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>Receipts</h2>
+              <button type="button" class="btn btn-add" data-toggle="receiptForm" data-label="+ Upload Receipt">+ Upload
+                Receipt</button>
+            </div>
+            <p class="hint">Files are saved and logged below.</p>
+            <form id="receiptForm" class="grid-form hidden">
+              <div class="field"><label>Date</label><input type="date" id="rcDate" /></div>
+              <div class="field">
+                <label>Category</label>
+                <select id="rcCategory">
+                  <option>Inventory Purchase</option>
+                  <option>Fuel</option>
+                  <option>Maintenance</option>
+                  <option>Tools & Equipment</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field"><label>Amount</label><input type="number" step="0.01" id="rcAmount"
+                  placeholder="0.00" /></div>
+              <div class="field"><label>Related item (optional)</label><input type="text" id="rcRelated"
+                  placeholder="e.g. inventory item name" /></div>
+              <div class="field span2"><label>Notes</label><input type="text" id="rcNotes" /></div>
+              <div class="field span2"><label>Receipt file (image or PDF)</label><input type="file" id="rcFile"
+                  accept="image/*,application/pdf" required /></div>
+              <button type="submit" class="btn btn-filled">Upload receipt</button>
+            </form>
+            <p class="msg" id="receiptMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Receipts log</h2>
+            <div class="table-wrap">
+              <table id="receiptsTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- PLANS -->
+        <section id="panel-plans" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>Plans</h2>
+              <button type="button" class="btn btn-add" data-toggle="planForm" data-label="+ Submit Plan">+ Submit
+                Plan</button>
+            </div>
+            <p class="hint">Submitted plans are subject to review.</p>
+            <form id="planForm" class="grid-form hidden">
+              <div class="field span2"><label>Title</label><input type="text" id="planTitle" required /></div>
+              <div class="field span2"><label>Description</label><input type="text" id="planDescription" /></div>
+              <button type="submit" class="btn btn-filled">Submit plan</button>
+            </form>
+            <p class="msg" id="planMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Plans log</h2>
+            <div class="table-wrap">
+              <table id="plansTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section id="panel-projects" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>Projects</h2>
+              <button type="button" class="btn btn-add" data-toggle="projectForm" data-label="+ Submit Project">+ Submit
+                Project</button>
+            </div>
+            <p class="hint">Submitted projects are subject to review.</p>
+            <form id="projectForm" class="grid-form hidden">
+              <div class="field span2"><label>Title</label><input type="text" id="projectTitle" required /></div>
+              <div class="field span2"><label>Description</label><input type="text" id="projectDescription" /></div>
+              <button type="submit" class="btn btn-filled">Submit project</button>
+            </form>
+            <p class="msg" id="projectMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Projects log</h2>
+            <div class="table-wrap">
+              <table id="projectsTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ZONES -->
+        <section id="panel-zones" class="panel hidden">
+          <div class="surface mgmt-only hidden" id="zoneFormCard">
+            <div class="panel-head">
+              <h2>Zones</h2>
+              <button type="button" class="btn btn-add" data-toggle="zoneForm" data-label="+ Add Zone">+ Add
+                Zone</button>
+            </div>
+            <form id="zoneForm" class="grid-form hidden">
+              <div class="field"><label>Code</label><input type="text" id="zoneCode" placeholder="e.g. Z8" required />
+              </div>
+              <div class="field"><label>Zone name</label><input type="text" id="zoneName" required /></div>
+              <div class="field span2"><label>Notes</label><input type="text" id="zoneNotes" /></div>
+              <button type="submit" class="btn btn-filled">Add zone</button>
+            </form>
+            <p class="msg" id="zoneMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Zones</h2>
+            <div class="table-wrap">
+              <table id="zonesTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ROLES -->
+        <!-- INVENTORY -->
+        <section id="panel-inventory" class="panel hidden">
+          <div class="surface mgmt-only hidden" id="inventoryFormCard">
+            <div class="panel-head">
+              <h2>Inventory</h2>
+              <button type="button" class="btn btn-add" data-toggle="inventoryForm" data-label="+ Add Item">+ Add
+                Item</button>
+            </div>
+            <form id="inventoryForm" class="grid-form hidden">
+              <div class="field"><label>Item</label><input type="text" id="invItem" required /></div>
+              <div class="field"><label>Location</label><input type="text" id="invLocation" /></div>
+              <div class="field"><label>Count</label><input type="number" id="invCount" min="0" /></div>
+              <div class="field">
+                <label>Status</label>
+                <select id="invStatus">
+                  <option>In Stock</option>
+                  <option>Low Stock</option>
+                  <option>Out of Stock</option>
+                  <option>On Order</option>
+                  <option>Damaged/Expired</option>
+                  <option>N/A</option>
+                </select>
+              </div>
+              <div class="field"><label>Expiry date</label><input type="date" id="invExpiry" /></div>
+              <button type="submit" class="btn btn-filled">Add item</button>
+            </form>
+            <p class="msg" id="inventoryMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Inventory</h2>
+            <div class="table-wrap">
+              <table id="inventoryTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TEAM (Director-only tab — user accounts AND roles live here together; no one else sees this tab) -->
+        <section id="panel-team" class="panel hidden">
+          <div class="surface director-only hidden" id="userFormCard">
+            <div class="panel-head">
+              <h2 id="userFormTitle">Register a team member</h2>
+              <button type="button" class="btn btn-add" data-toggle="userForm" data-label="+ Register User"
+                id="userFormToggleBtn">+ Register User</button>
+            </div>
+            <p class="hint" id="userFormHint">The Director creates accounts.</p>
+            <form id="userForm" class="grid-form hidden">
+              <div class="field"><label>Full name</label><input type="text" id="uFullName" required /></div>
+              <div class="field" id="uUsernameField"><label>Username</label><input type="text" id="uUsername" required
+                  autocomplete="off" /></div>
+              <div class="field" id="uPasswordField"><label>Temporary password</label><input type="text" id="uPassword"
+                  required autocomplete="off" /></div>
+              <div class="field">
+                <label>Role</label>
+                <select id="uRole" required>
+                  <option value="" disabled selected>Select a role…</option>
+                </select>
+              </div>
+              <div class="field"><label>Date of birth</label><input type="date" id="uDob" /></div>
+              <div class="field"><label>Gender</label><input type="text" id="uGender" /></div>
+              <div class="field"><label>Phone</label><input type="text" id="uPhone" /></div>
+              <div class="field"><label>Email</label><input type="email" id="uEmail" /></div>
+              <div class="field span2"><label>Address</label><input type="text" id="uAddress" /></div>
+              <div class="field"><label>Emergency contact name</label><input type="text" id="uEmergencyName" /></div>
+              <div class="field"><label>Emergency contact phone</label><input type="text" id="uEmergencyPhone" /></div>
+              <div class="field span2"><label>Education history</label><input type="text" id="uEducation"
+                  placeholder="e.g. 2015–2019: BSc Agriculture, University of X" /></div>
+              <div class="field span2"><label>Employment history</label><input type="text" id="uEmployment"
+                  placeholder="Previous roles / employers" /></div>
+              <div class="field span2"><label>Skills</label><input type="text" id="uSkills"
+                  placeholder="Comma-separated" /></div>
+              <div class="field span2"><label>Languages</label><input type="text" id="uLanguages"
+                  placeholder="Comma-separated" /></div>
+              <div class="field span2"><label>Positions held in the garden & responsibilities</label><input type="text"
+                  id="uPositions" /></div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-filled" id="userFormSubmitBtn">Create account</button>
+                <button type="button" class="btn btn-text hidden" id="userFormCancelBtn">Cancel edit</button>
+              </div>
+            </form>
+            <p class="msg" id="userMessage"></p>
+          </div>
+          <div class="surface">
+            <h2>Team profiles</h2>
+            <div class="card-grid" id="usersTable"></div>
+          </div>
+
+          <div class="surface director-only hidden" id="roleFormCard">
+            <div class="panel-head">
+              <h2>Roles</h2>
+              <button type="button" class="btn btn-add" data-toggle="roleForm" data-label="+ Add Role">+ Add
+                Role</button>
+            </div>
+            <form id="roleForm" class="grid-form hidden">
+              <div class="field"><label>Role name</label><input type="text" id="roleName" required /></div>
+              <div class="field"><label>Count</label><input type="number" id="roleCount" min="0" value="1" /></div>
+              <div class="field span2"><label>Core focus</label><input type="text" id="roleFocus" /></div>
+              <button type="submit" class="btn btn-filled">Add role</button>
+            </form>
+            <p class="msg" id="roleMessage"></p>
+          </div>
+          <div class="surface director-only hidden" id="rolesTableCard">
+            <h2>Roles</h2>
+            <div class="card-grid" id="rolesTable"></div>
+          </div>
+        </section>
+
+        <!-- AUDIT LOG (Director-only — who logged in, when, and what they did) -->
+        <section id="panel-audit" class="panel hidden">
+          <div class="surface">
+            <h2>Audit Log</h2>
+            <p class="hint">Session History Logs</p>
+            <div class="table-wrap">
+              <table id="auditTable">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROFILE (read-only — the signed-in user's own record; only the Director can edit it, from the Team tab) -->
+        <section id="panel-profile" class="panel hidden">
+          <div class="surface">
+            <div class="panel-head">
+              <h2>My profile</h2>
+            </div>
+            <p class="hint">Contact IT admin to update anything that needs to change.</p>
+            <dl class="profile-grid" id="profileGrid"></dl>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">TENGBA GARDEN — "Start Small. Grow Tall."</footer>
+
+    </div><!-- /content-area -->
+  </div><!-- /app-shell -->
+
+  <!-- ================= MODAL DIALOG (replaces browser prompt/confirm/alert) ================= -->
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle" class="modal-title"></h3>
+      <p id="modalMessage" class="modal-message"></p>
+      <div class="field hidden" id="modalInputField">
+        <input type="text" id="modalInput" autocomplete="off" />
       </div>
-    </main>
-
-    <!-- ================= DASHBOARD ================= -->
-    <main id="dashboard" class="dash-wrap hidden">
-
-      <!-- OVERVIEW -->
-      <section id="panel-overview" class="panel">
-        <div class="surface">
-          <h2>Overview</h2>
-          <p class="hint">A snapshot across activity logs, daily reports, plans, and projects.</p>
-          <div class="card-grid stat-grid" id="overviewStats"></div>
-        </div>
-
-        <div class="surface">
-          <h2>Recent activity</h2>
-          <div class="card-grid" id="overviewActivity"></div>
-        </div>
-
-        <div class="surface">
-          <h2>Recent reports</h2>
-          <div class="card-grid" id="overviewReports"></div>
-        </div>
-
-        <div class="surface">
-          <h2>Recent plans</h2>
-          <div class="card-grid" id="overviewPlans"></div>
-        </div>
-
-        <div class="surface">
-          <h2>Recent projects</h2>
-          <div class="card-grid" id="overviewProjects"></div>
-        </div>
-      </section>
-
-      <!-- ACTIVITY LOG -->
-      <section id="panel-activity" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>Activity Log</h2>
-        <button type="button" class="btn btn-add" data-toggle="activityForm" data-label="+ Log Activity">+ Log Activity</button>
+      <p class="msg error hidden" id="modalError"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-text" id="modalCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-filled" id="modalOkBtn">OK</button>
       </div>
-      <form id="activityForm" class="grid-form hidden">
-        <div class="field"><label>Date</label><input type="date" id="actDate" /></div>
-        <div class="field"><label>Zone</label><select id="actZone"><option value="">—</option></select></div>
-        <div class="field span2"><label>Activity</label><input type="text" id="actActivity" placeholder="e.g. Windrow turning" required /></div>
-        <div class="field"><label>Personnel</label><input type="text" id="actPersonnel" placeholder="Defaults to you" /></div>
-        <div class="field span2"><label>Notes</label><input type="text" id="actNotes" /></div>
-        <button type="submit" class="btn btn-filled">Add entry</button>
-      </form>
-      <p class="msg" id="activityMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Recent activity</h2>
-      <div class="table-wrap"><table id="activityTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- REPORT (daily work report — everyone reports what they did that day) -->
-  <section id="panel-report" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>Daily Report</h2>
-        <button type="button" class="btn btn-add" data-toggle="reportForm" data-label="+ Report Today's Work">+ Report Today's Work</button>
-      </div>
-      <p class="hint">A quick daily report.</p>
-      <form id="reportForm" class="grid-form hidden">
-        <div class="field"><label>Date</label><input type="date" id="repDate" /></div>
-        <div class="field span2"><label>Work done</label><input type="text" id="repWork" placeholder="e.g. Turned windrows 1–3, watered nursery beds" required /></div>
-        <div class="field span2"><label>Notes (optional)</label><input type="text" id="repNotes" /></div>
-        <button type="submit" class="btn btn-filled">Submit report</button>
-      </form>
-      <p class="msg" id="reportMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Daily reports</h2>
-      <div class="table-wrap"><table id="reportsTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- ATTENDANCE -->
-  <section id="panel-attendance" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>Attendance</h2>
-        <button type="button" class="btn btn-add" data-toggle="attendanceForm" data-label="+ Mark Attendance">+ Mark Attendance</button>
-      </div>
-      <form id="attendanceForm" class="grid-form hidden">
-        <div class="field"><label>Date</label><input type="date" id="attDate" /></div>
-        <div class="field"><label>Name</label><input type="text" id="attName" placeholder="Defaults to you" /></div>
-        <div class="field"><label>Role</label><input type="text" id="attRole" placeholder="Defaults to your role" /></div>
-        <div class="field"><label>Time in</label><input type="time" id="attTimeIn" /></div>
-        <div class="field"><label>Time out</label><input type="time" id="attTimeOut" /></div>
-        <div class="field">
-          <label>Status</label>
-          <select id="attStatus">
-            <option>Present</option>
-            <option>Absent</option>
-            <option>Half Day</option>
-            <option>Sick Leave</option>
-            <option>Annual Leave</option>
-            <option>Public Holiday</option>
-          </select>
-        </div>
-        <div class="field span2"><label>Notes</label><input type="text" id="attNotes" /></div>
-        <button type="submit" class="btn btn-filled">Save attendance</button>
-      </form>
-      <p class="msg" id="attendanceMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Recent attendance</h2>
-      <div class="table-wrap"><table id="attendanceTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- RECEIPTS -->
-  <section id="panel-receipts" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>Receipts</h2>
-        <button type="button" class="btn btn-add" data-toggle="receiptForm" data-label="+ Upload Receipt">+ Upload Receipt</button>
-      </div>
-      <p class="hint">Files are saved to the shared Drive receipts folder and logged below.</p>
-      <form id="receiptForm" class="grid-form hidden">
-        <div class="field"><label>Date</label><input type="date" id="rcDate" /></div>
-        <div class="field">
-          <label>Category</label>
-          <select id="rcCategory">
-            <option>Inventory Purchase</option>
-            <option>Fuel</option>
-            <option>Maintenance</option>
-            <option>Tools & Equipment</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="field"><label>Amount</label><input type="number" step="0.01" id="rcAmount" placeholder="0.00" /></div>
-        <div class="field"><label>Related item (optional)</label><input type="text" id="rcRelated" placeholder="e.g. inventory item name" /></div>
-        <div class="field span2"><label>Notes</label><input type="text" id="rcNotes" /></div>
-        <div class="field span2"><label>Receipt file (image or PDF)</label><input type="file" id="rcFile" accept="image/*,application/pdf" required /></div>
-        <button type="submit" class="btn btn-filled">Upload receipt</button>
-      </form>
-      <p class="msg" id="receiptMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Receipts log</h2>
-      <div class="table-wrap"><table id="receiptsTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- PLANS -->
-  <section id="panel-plans" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>Plans</h2>
-        <button type="button" class="btn btn-add" data-toggle="planForm" data-label="+ Submit Plan">+ Submit Plan</button>
-      </div>
-      <p class="hint">Submitted plans are subject to review.</p>
-      <form id="planForm" class="grid-form hidden">
-        <div class="field span2"><label>Title</label><input type="text" id="planTitle" required /></div>
-        <div class="field span2"><label>Description</label><input type="text" id="planDescription" /></div>
-        <button type="submit" class="btn btn-filled">Submit plan</button>
-      </form>
-      <p class="msg" id="planMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Plans log</h2>
-      <div class="table-wrap"><table id="plansTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- PROJECTS -->
-  <section id="panel-projects" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>Projects</h2>
-        <button type="button" class="btn btn-add" data-toggle="projectForm" data-label="+ Submit Project">+ Submit Project</button>
-      </div>
-      <p class="hint">Submitted projects are subject to review.</p>
-      <form id="projectForm" class="grid-form hidden">
-        <div class="field span2"><label>Title</label><input type="text" id="projectTitle" required /></div>
-        <div class="field span2"><label>Description</label><input type="text" id="projectDescription" /></div>
-        <button type="submit" class="btn btn-filled">Submit project</button>
-      </form>
-      <p class="msg" id="projectMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Projects log</h2>
-      <div class="table-wrap"><table id="projectsTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- ZONES -->
-  <section id="panel-zones" class="panel hidden">
-    <div class="surface mgmt-only hidden" id="zoneFormCard">
-      <div class="panel-head">
-        <h2>Zones</h2>
-        <button type="button" class="btn btn-add" data-toggle="zoneForm" data-label="+ Add Zone">+ Add Zone</button>
-      </div>
-      <form id="zoneForm" class="grid-form hidden">
-        <div class="field"><label>Code</label><input type="text" id="zoneCode" placeholder="e.g. Z8" required /></div>
-        <div class="field"><label>Zone name</label><input type="text" id="zoneName" required /></div>
-        <div class="field span2"><label>Notes</label><input type="text" id="zoneNotes" /></div>
-        <button type="submit" class="btn btn-filled">Add zone</button>
-      </form>
-      <p class="msg" id="zoneMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Zones</h2>
-      <div class="table-wrap"><table id="zonesTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- ROLES -->
-  <!-- INVENTORY -->
-  <section id="panel-inventory" class="panel hidden">
-    <div class="surface mgmt-only hidden" id="inventoryFormCard">
-      <div class="panel-head">
-        <h2>Inventory</h2>
-        <button type="button" class="btn btn-add" data-toggle="inventoryForm" data-label="+ Add Item">+ Add Item</button>
-      </div>
-      <form id="inventoryForm" class="grid-form hidden">
-        <div class="field"><label>Item</label><input type="text" id="invItem" required /></div>
-        <div class="field"><label>Location</label><input type="text" id="invLocation" /></div>
-        <div class="field"><label>Count</label><input type="number" id="invCount" min="0" /></div>
-        <div class="field">
-          <label>Status</label>
-          <select id="invStatus">
-            <option>In Stock</option>
-            <option>Low Stock</option>
-            <option>Out of Stock</option>
-            <option>On Order</option>
-            <option>Damaged/Expired</option>
-            <option>N/A</option>
-          </select>
-        </div>
-        <div class="field"><label>Expiry date</label><input type="date" id="invExpiry" /></div>
-        <button type="submit" class="btn btn-filled">Add item</button>
-      </form>
-      <p class="msg" id="inventoryMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Inventory</h2>
-      <div class="table-wrap"><table id="inventoryTable"><thead></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- TEAM (Director-only tab — user accounts AND roles live here together; no one else sees this tab) -->
-  <section id="panel-team" class="panel hidden">
-    <div class="surface director-only hidden" id="userFormCard">
-      <div class="panel-head">
-        <h2 id="userFormTitle">Register a team member</h2>
-        <button type="button" class="btn btn-add" data-toggle="userForm" data-label="+ Register User" id="userFormToggleBtn">+ Register User</button>
-      </div>
-      <p class="hint" id="userFormHint">The Director creates accounts.</p>
-      <form id="userForm" class="grid-form hidden">
-        <div class="field"><label>Full name</label><input type="text" id="uFullName" required /></div>
-        <div class="field" id="uUsernameField"><label>Username</label><input type="text" id="uUsername" required autocomplete="off" /></div>
-        <div class="field" id="uPasswordField"><label>Temporary password</label><input type="text" id="uPassword" required autocomplete="off" /></div>
-        <div class="field">
-          <label>Role</label>
-          <select id="uRole" required><option value="" disabled selected>Select a role…</option></select>
-        </div>
-        <div class="field"><label>Date of birth</label><input type="date" id="uDob" /></div>
-        <div class="field"><label>Gender</label><input type="text" id="uGender" /></div>
-        <div class="field"><label>Phone</label><input type="text" id="uPhone" /></div>
-        <div class="field"><label>Email</label><input type="email" id="uEmail" /></div>
-        <div class="field span2"><label>Address</label><input type="text" id="uAddress" /></div>
-        <div class="field"><label>Emergency contact name</label><input type="text" id="uEmergencyName" /></div>
-        <div class="field"><label>Emergency contact phone</label><input type="text" id="uEmergencyPhone" /></div>
-        <div class="field span2"><label>Education history</label><input type="text" id="uEducation" placeholder="e.g. 2015–2019: BSc Agriculture, University of X" /></div>
-        <div class="field span2"><label>Employment history</label><input type="text" id="uEmployment" placeholder="Previous roles / employers" /></div>
-        <div class="field span2"><label>Skills</label><input type="text" id="uSkills" placeholder="Comma-separated" /></div>
-        <div class="field span2"><label>Languages</label><input type="text" id="uLanguages" placeholder="Comma-separated" /></div>
-        <div class="field span2"><label>Positions held in the garden & responsibilities</label><input type="text" id="uPositions" /></div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-filled" id="userFormSubmitBtn">Create account</button>
-          <button type="button" class="btn btn-text hidden" id="userFormCancelBtn">Cancel edit</button>
-        </div>
-      </form>
-      <p class="msg" id="userMessage"></p>
-    </div>
-    <div class="surface">
-      <h2>Team profiles</h2>
-      <div class="card-grid" id="usersTable"></div>
-    </div>
-
-    <div class="surface director-only hidden" id="roleFormCard">
-      <div class="panel-head">
-        <h2>Roles</h2>
-        <button type="button" class="btn btn-add" data-toggle="roleForm" data-label="+ Add Role">+ Add Role</button>
-      </div>
-      <form id="roleForm" class="grid-form hidden">
-        <div class="field"><label>Role name</label><input type="text" id="roleName" required /></div>
-        <div class="field"><label>Count</label><input type="number" id="roleCount" min="0" value="1" /></div>
-        <div class="field span2"><label>Core focus</label><input type="text" id="roleFocus" /></div>
-        <button type="submit" class="btn btn-filled">Add role</button>
-      </form>
-      <p class="msg" id="roleMessage"></p>
-    </div>
-    <div class="surface director-only hidden" id="rolesTableCard">
-      <h2>Roles</h2>
-      <div class="card-grid" id="rolesTable"></div>
-    </div>
-  </section>
-
-  <!-- PROFILE (read-only — the signed-in user's own record; only the Director can edit it, from the Team tab) -->
-  <section id="panel-profile" class="panel hidden">
-    <div class="surface">
-      <div class="panel-head">
-        <h2>My profile</h2>
-      </div>
-      <p class="hint">Contact IT admin to update anything that needs to change.</p>
-      <dl class="profile-grid" id="profileGrid"></dl>
-    </div>
-  </section>
-    </main>
-
-    <footer class="footer">TENGBA — "Start Small. Grow Tall."</footer>
-
-  </div><!-- /content-area -->
-</div><!-- /app-shell -->
-
-<!-- ================= MODAL DIALOG (replaces browser prompt/confirm/alert) ================= -->
-<div id="modalOverlay" class="modal-overlay hidden">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <h3 id="modalTitle" class="modal-title"></h3>
-    <p id="modalMessage" class="modal-message"></p>
-    <div class="field hidden" id="modalInputField">
-      <input type="text" id="modalInput" autocomplete="off" />
-    </div>
-    <p class="msg error hidden" id="modalError"></p>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-text" id="modalCancelBtn">Cancel</button>
-      <button type="button" class="btn btn-filled" id="modalOkBtn">OK</button>
     </div>
   </div>
-</div>
 
-<script src="config.js"></script>
-<script src="app.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>
