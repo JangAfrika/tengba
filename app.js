@@ -259,8 +259,8 @@ document.getElementById('logoutBtn').addEventListener('click', performLogout);
 // check (rather than resetting a timer on every mousemove) keeps this
 // cheap even on a slow device.
 // ---------------------------------------------------------------
-const SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
-const SESSION_CHECK_INTERVAL_MS = 15 * 1000;
+const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+const SESSION_CHECK_INTERVAL_MS = 10 * 1000;
 let lastActivityAt = Date.now();
 let sessionCheckHandle = null;
 
@@ -276,7 +276,7 @@ function startSessionTimer() {
     if (Date.now() - lastActivityAt >= SESSION_TIMEOUT_MS) {
       stopSessionTimer();
       performLogout();
-      await showAlert('You were signed out after 20 minutes of inactivity. Log in again to continue.', 'Session expired');
+      await showAlert('Session expired');
     }
   }, SESSION_CHECK_INTERVAL_MS);
 }
