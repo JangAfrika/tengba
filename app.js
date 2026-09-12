@@ -56,6 +56,36 @@ function showMessage(el, text, kind) {
 }
 
 // ---------------------------------------------------------------
+// Prevent duplicate submissions — wraps a form's submit handler so a
+// second click (or a double-click) while the first request is still in
+// flight is ignored, and the button is disabled + shows "Saving…" until
+// the request finishes. This is what stops things like an attendance
+// entry getting logged twice from one impatient double-click.
+// ---------------------------------------------------------------
+function withSubmitLock(handler) {
+  return async function (e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn && btn.disabled) return; // already submitting — ignore the extra click
+    let originalLabel;
+    if (btn) {
+      originalLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+    }
+    try {
+      await handler(form);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      }
+    }
+  };
+}
+
+// ---------------------------------------------------------------
 // Generic "+ (Title)" form toggles — every add-form is collapsed by
 // default; clicking the button at the top of the panel reveals it.
 // ---------------------------------------------------------------
@@ -177,8 +207,7 @@ sidebarBackdropEl.addEventListener('click', closeSidebar);
 // ---------------------------------------------------------------
 // Login / Logout
 // ---------------------------------------------------------------
-document.getElementById('loginForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('loginForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('loginMessage');
   showMessage(msg, '');
   try {
@@ -195,20 +224,66 @@ document.getElementById('loginForm').addEventListener('submit', async function (
   } catch (err) {
     showMessage(msg, err.message, 'error');
   }
-});
+}));
 
-document.getElementById('logoutBtn').addEventListener('click', function () {
+function clearLoginForm() {
+  const form = document.getElementById('loginForm');
+  form.reset();
+  // Belt-and-braces: some browsers restore autofilled values right after
+  // reset() on the next paint, so clear the fields explicitly too.
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  showMessage(document.getElementById('loginMessage'), '');
+}
+
+function performLogout() {
   state.token = '';
   state.user = null;
   localStorage.removeItem(LS_TOKEN);
   localStorage.removeItem(LS_USER);
   document.body.classList.remove('authed');
   closeSidebar();
+  stopSessionTimer();
   document.getElementById('dashboard').classList.add('hidden');
   document.getElementById('authScreen').classList.remove('hidden');
   document.getElementById('userChip').classList.add('hidden');
   document.getElementById('logoutBtn').classList.add('hidden');
+  clearLoginForm();
+}
+
+document.getElementById('logoutBtn').addEventListener('click', performLogout);
+
+// ---------------------------------------------------------------
+// Session timeout — sign out automatically after 20 minutes with no
+// mouse, keyboard, touch, or scroll activity. A lightweight periodic
+// check (rather than resetting a timer on every mousemove) keeps this
+// cheap even on a slow device.
+// ---------------------------------------------------------------
+const SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+const SESSION_CHECK_INTERVAL_MS = 15 * 1000;
+let lastActivityAt = Date.now();
+let sessionCheckHandle = null;
+
+function markActivity() { lastActivityAt = Date.now(); }
+['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (evt) {
+  document.addEventListener(evt, markActivity, { passive: true });
 });
+
+function startSessionTimer() {
+  markActivity();
+  stopSessionTimer();
+  sessionCheckHandle = setInterval(async function () {
+    if (Date.now() - lastActivityAt >= SESSION_TIMEOUT_MS) {
+      stopSessionTimer();
+      performLogout();
+      await showAlert('You were signed out after 20 minutes of inactivity. Log in again to continue.', 'Session expired');
+    }
+  }, SESSION_CHECK_INTERVAL_MS);
+}
+
+function stopSessionTimer() {
+  if (sessionCheckHandle) { clearInterval(sessionCheckHandle); sessionCheckHandle = null; }
+}
 
 // ---------------------------------------------------------------
 // Dashboard tab switching
@@ -240,7 +315,57 @@ function loadPanel(name) {
 }
 
 // ---------------------------------------------------------------
-// Table rendering helpers
+// Card rendering helpers — used only for Overview and Team, where the
+// records are naturally "one item, several attributes" and a scannable
+// grid of cards works better than a wide table. Every other list (logs,
+// receipts, plans, etc.) stays tabular below — a card per row for those
+// would mean endless vertical scrolling to compare entries.
+// ---------------------------------------------------------------
+function buildCard(headers, cells) {
+  const hasActions = headers[headers.length - 1] === 'Actions';
+  const bodyHeaders = hasActions ? headers.slice(1, -1) : headers.slice(1);
+  const bodyCells = hasActions ? cells.slice(1, -1) : cells.slice(1);
+  const actionsHtml = hasActions ? cells[cells.length - 1] : '';
+
+  let html = '<div class="data-card">';
+  html += '<div class="data-card-title"><span class="data-card-eyebrow">' + headers[0] + '</span>' + (cells[0] || '—') + '</div>';
+
+  const bodyRows = bodyHeaders.map(function (h, i) {
+    const val = bodyCells[i];
+    if (val === '' || val === undefined || val === null) return '';
+    return '<div class="data-card-row"><span class="data-card-label">' + h + '</span><span class="data-card-value">' + val + '</span></div>';
+  }).join('');
+  if (bodyRows) html += '<div class="data-card-body">' + bodyRows + '</div>';
+
+  if (actionsHtml) html += '<div class="data-card-actions">' + actionsHtml + '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderCardGrid(containerId, headers, rows) {
+  const container = document.getElementById(containerId);
+  if (!rows.length) {
+    container.innerHTML = '<p class="empty-state">No entries yet.</p>';
+    return;
+  }
+  container.innerHTML = rows.map(function (row) { return buildCard(headers, row); }).join('');
+}
+
+/** Like renderCardGrid, but the last column of each row is raw HTML (for
+ * action buttons), rendered as a footer of buttons on the card. */
+function renderCardGridRich(containerId, headers, rowObjs) {
+  const container = document.getElementById(containerId);
+  if (!rowObjs.length) {
+    container.innerHTML = '<p class="empty-state">No entries yet.</p>';
+    return;
+  }
+  container.innerHTML = rowObjs.map(function (r) { return buildCard(headers, r.cells); }).join('');
+}
+
+// ---------------------------------------------------------------
+// Table rendering helpers — used everywhere else (logs, receipts,
+// plans, projects, zones, inventory) so rows stay easy to scan and
+// compare without endless scrolling.
 // ---------------------------------------------------------------
 function renderTable(tableId, headers, rows) {
   const table = document.getElementById(tableId);
@@ -258,8 +383,7 @@ function renderTable(tableId, headers, rows) {
 }
 
 /** Like renderTable, but the last column of each row is raw HTML (for
- * action buttons) instead of plain text, and rows can carry a status
- * class for the Pending/Approved/Rejected pill styling. */
+ * action buttons) instead of plain text. */
 function renderTableRich(tableId, headers, rowObjs) {
   const table = document.getElementById(tableId);
   const thead = table.querySelector('thead');
@@ -300,66 +424,77 @@ function statusPill(status) {
 }
 
 // ---------------------------------------------------------------
-// Overview — a team-wide summary: name, role, and how much each
-// person has logged across activities, attendance, plans, and projects.
+// Overview — a snapshot across the whole team: quick stats plus the
+// most recent entries for Activity Log, Reports, Plans, and Projects.
+// No per-user breakdown here — that level of detail lives in the
+// Team tab (Director-only) and each category's own tab.
+//
+// This uses the combined `getDashboard` backend action instead of
+// several separate requests — one network round trip instead of many,
+// which is the single biggest win for perceived speed against an Apps
+// Script backend (each round trip carries real fixed latency
+// regardless of payload size). It also opportunistically refreshes
+// the Role/Zone dropdowns used elsewhere in the app from the same
+// response.
 // ---------------------------------------------------------------
+function statCard(label, value, sub) {
+  return '<div class="stat-card"><span class="stat-label">' + label + '</span>' +
+    '<span class="stat-number">' + value + '</span>' +
+    (sub ? '<span class="stat-sub">' + sub + '</span>' : '') +
+    '</div>';
+}
+
+function recentRows(rows, n) {
+  return (rows || []).slice(-n).reverse();
+}
+
 async function loadOverview() {
-  const table = document.getElementById('overviewTable');
-  table.querySelector('tbody').innerHTML = '<tr class="empty-row"><td colspan="7">Loading…</td></tr>';
+  document.getElementById('overviewStats').innerHTML = '<p class="empty-state">Loading…</p>';
 
-  const [usersRes, activityRes, reportsRes, attendanceRes, plansRes, projectsRes] = await Promise.all([
-    api('getUsers', {}), api('getActivityLog', {}), api('getReports', {}), api('getAttendance', {}), api('getPlans', {}), api('getProjects', {})
-  ]);
-  if (!usersRes.success) return;
+  const res = await api('getDashboard', {});
+  if (!res.success) return;
 
-  function countFor(rows, key) {
-    const counts = {};
-    (rows || []).forEach(function (r) {
-      const id = r[key];
-      if (!id) return;
-      counts[id] = (counts[id] || 0) + 1;
-    });
-    return counts;
-  }
-  function pendingCountFor(rows, key) {
-    const counts = {};
-    (rows || []).forEach(function (r) {
-      if (r[key] && String(r.Status) === 'Pending') counts[r[key]] = (counts[r[key]] || 0) + 1;
-    });
-    return counts;
-  }
+  state.roles = res.roles || [];
+  state.zones = res.zones || [];
+  state.users = res.users || [];
+  populateRoleDropdown();
+  populateZoneDropdown();
 
-  const activityCounts = countFor(activityRes.success ? activityRes.log : [], 'UserId');
-  const reportCounts = countFor(reportsRes.success ? reportsRes.reports : [], 'UserId');
-  const attendanceCounts = countFor(attendanceRes.success ? attendanceRes.attendance : [], 'UserId');
-  const planCounts = countFor(plansRes.success ? plansRes.plans : [], 'SubmittedByUserId');
-  const planPending = pendingCountFor(plansRes.success ? plansRes.plans : [], 'SubmittedByUserId');
-  const projectCounts = countFor(projectsRes.success ? projectsRes.projects : [], 'SubmittedByUserId');
-  const projectPending = pendingCountFor(projectsRes.success ? projectsRes.projects : [], 'SubmittedByUserId');
+  const plansPending = (res.plans || []).filter(function (p) { return p.Status === 'Pending'; }).length;
+  const projectsPending = (res.projects || []).filter(function (p) { return p.Status === 'Pending'; }).length;
 
-  const rows = usersRes.users.map(function (u) {
-    const plans = planCounts[u.UserId] || 0;
-    const planPend = planPending[u.UserId] || 0;
-    const projects = projectCounts[u.UserId] || 0;
-    const projectPend = projectPending[u.UserId] || 0;
-    return [
-      fmt(u['Full Name']), fmt(u.Role),
-      fmt(activityCounts[u.UserId] || 0),
-      fmt(reportCounts[u.UserId] || 0),
-      fmt(attendanceCounts[u.UserId] || 0),
-      plans + (planPend ? ' (' + planPend + ' pending)' : ''),
-      projects + (projectPend ? ' (' + projectPend + ' pending)' : '')
-    ];
+  document.getElementById('overviewStats').innerHTML = [
+    statCard('Activity Log entries', (res.log || []).length),
+    statCard('Daily reports', (res.reports || []).length),
+    statCard('Plans', (res.plans || []).length, plansPending ? plansPending + ' pending' : null),
+    statCard('Projects', (res.projects || []).length, projectsPending ? projectsPending + ' pending' : null)
+  ].join('');
+
+  const activityRows = recentRows(res.log, 5).map(function (r) {
+    return [fmt(r.Date), fmt(r.Activity), fmt(r.Zone), fmt(r.Personnel), fmt(r.Notes)];
   });
+  renderCardGrid('overviewActivity', ['Date', 'Activity', 'Zone', 'Personnel', 'Notes'], activityRows);
 
-  renderTable('overviewTable', ['Name', 'Role', 'Activities', 'Reports', 'Attendance', 'Plans', 'Projects'], rows);
+  const reportRows = recentRows(res.reports, 5).map(function (r) {
+    return [fmt(r.Date), fmt(r.SubmittedBy), fmt(r.WorkDone), fmt(r.Notes)];
+  });
+  renderCardGrid('overviewReports', ['Date', 'Submitted By', 'Work Done', 'Notes'], reportRows);
+
+  const planRows = recentRows(res.plans, 5).map(function (p) {
+    return [fmt(p.Title), fmt(p.SubmittedBy), fmt(p.DateSubmitted), statusPill(p.Status)];
+  });
+  renderCardGrid('overviewPlans', ['Title', 'Submitted By', 'Date', 'Status'], planRows);
+
+  const projectRows = recentRows(res.projects, 5).map(function (p) {
+    return [fmt(p.Title), fmt(p.SubmittedBy), fmt(p.DateSubmitted), statusPill(p.Status)];
+  });
+  renderCardGrid('overviewProjects', ['Title', 'Submitted By', 'Date', 'Status'], projectRows);
 }
 
 // ---------------------------------------------------------------
 // Activity Log
 // ---------------------------------------------------------------
-document.getElementById('activityForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('activityForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('activityMessage');
   const zoneSel = document.getElementById('actZone');
   try {
@@ -377,7 +512,7 @@ document.getElementById('activityForm').addEventListener('submit', async functio
     closeForm('activityForm', '[data-toggle="activityForm"]');
     loadActivityLog();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadActivityLog() {
   const res = await api('getActivityLog', {});
@@ -391,8 +526,7 @@ async function loadActivityLog() {
 // ---------------------------------------------------------------
 // Daily Report — a quick per-person log of what they worked on today
 // ---------------------------------------------------------------
-document.getElementById('reportForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('reportForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('reportMessage');
   try {
     const res = await api('submitReport', {
@@ -406,7 +540,7 @@ document.getElementById('reportForm').addEventListener('submit', async function 
     closeForm('reportForm', '[data-toggle="reportForm"]');
     loadReports();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadReports() {
   const res = await api('getReports', {});
@@ -420,8 +554,7 @@ async function loadReports() {
 // ---------------------------------------------------------------
 // Attendance
 // ---------------------------------------------------------------
-document.getElementById('attendanceForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('attendanceForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('attendanceMessage');
   try {
     const res = await api('markAttendance', {
@@ -439,7 +572,7 @@ document.getElementById('attendanceForm').addEventListener('submit', async funct
     closeForm('attendanceForm', '[data-toggle="attendanceForm"]');
     loadAttendance();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadAttendance() {
   const res = await api('getAttendance', {});
@@ -462,8 +595,7 @@ function fileToBase64(file) {
   });
 }
 
-document.getElementById('receiptForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('receiptForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('receiptMessage');
   const fileInput = document.getElementById('rcFile');
   const file = fileInput.files[0];
@@ -489,7 +621,7 @@ document.getElementById('receiptForm').addEventListener('submit', async function
     closeForm('receiptForm', '[data-toggle="receiptForm"]');
     loadReceipts();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadReceipts() {
   const res = await api('getReceipts', {});
@@ -504,8 +636,7 @@ async function loadReceipts() {
 // ---------------------------------------------------------------
 // Plans (submit → Director approves/rejects)
 // ---------------------------------------------------------------
-document.getElementById('planForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('planForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('planMessage');
   try {
     const res = await api('submitPlan', {
@@ -518,7 +649,7 @@ document.getElementById('planForm').addEventListener('submit', async function (e
     closeForm('planForm', '[data-toggle="planForm"]');
     loadPlans();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadPlans() {
   const res = await api('getPlans', {});
@@ -553,8 +684,7 @@ async function loadPlans() {
 // ---------------------------------------------------------------
 // Projects (submit → Director approves/rejects)
 // ---------------------------------------------------------------
-document.getElementById('projectForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('projectForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('projectMessage');
   try {
     const res = await api('submitProject', {
@@ -567,7 +697,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
     closeForm('projectForm', '[data-toggle="projectForm"]');
     loadProjects();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadProjects() {
   const res = await api('getProjects', {});
@@ -602,8 +732,7 @@ async function loadProjects() {
 // ---------------------------------------------------------------
 // Zones
 // ---------------------------------------------------------------
-document.getElementById('zoneForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('zoneForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('zoneMessage');
   try {
     const res = await api('createZone', {
@@ -618,7 +747,7 @@ document.getElementById('zoneForm').addEventListener('submit', async function (e
     await refreshReferenceData();
     loadZones();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadZones() {
   const res = await api('getZones', {});
@@ -641,8 +770,7 @@ function populateZoneDropdown() {
 // ---------------------------------------------------------------
 // Roles
 // ---------------------------------------------------------------
-document.getElementById('roleForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('roleForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('roleMessage');
   try {
     const res = await api('createRole', {
@@ -657,14 +785,14 @@ document.getElementById('roleForm').addEventListener('submit', async function (e
     await refreshReferenceData();
     loadRoles();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadRoles() {
   const res = await api('getRoles', {});
   if (!res.success) return;
   state.roles = res.roles;
   const rows = res.roles.map(function (r) { return [fmt(r['#']), fmt(r.Role), fmt(r.Count), fmt(r['Core Focus'])]; });
-  renderTable('rolesTable', ['#', 'Role', 'Count', 'Core Focus'], rows);
+  renderCardGrid('rolesTable', ['#', 'Role', 'Count', 'Core Focus'], rows);
   populateRoleDropdown();
 }
 
@@ -680,8 +808,7 @@ function populateRoleDropdown() {
 // ---------------------------------------------------------------
 // Inventory
 // ---------------------------------------------------------------
-document.getElementById('inventoryForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('inventoryForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('inventoryMessage');
   try {
     const res = await api('addInventory', {
@@ -697,7 +824,7 @@ document.getElementById('inventoryForm').addEventListener('submit', async functi
     closeForm('inventoryForm', '[data-toggle="inventoryForm"]');
     loadInventory();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadInventory() {
   const res = await api('getInventory', {});
@@ -773,8 +900,7 @@ document.getElementById('userFormToggleBtn').addEventListener('click', function 
   if (editingUserId) stopEditUser();
 });
 
-document.getElementById('userForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+document.getElementById('userForm').addEventListener('submit', withSubmitLock(async function () {
   const msg = document.getElementById('userMessage');
   const profileFields = {
     name: document.getElementById('uFullName').value.trim(),
@@ -808,7 +934,7 @@ document.getElementById('userForm').addEventListener('submit', async function (e
     if (!wasEditing) closeForm('userForm', '[data-toggle="userForm"]');
     loadUsers();
   } catch (err) { showMessage(msg, err.message, 'error'); }
-});
+}));
 
 async function loadUsers() {
   const res = await api('getUsers', {});
@@ -836,7 +962,7 @@ async function loadUsers() {
     return { cells: cells };
   });
 
-  renderTableRich('usersTable', headers, rowObjs);
+  renderCardGridRich('usersTable', headers, rowObjs);
 
   document.querySelectorAll('[data-edit-user]').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -943,8 +1069,8 @@ function enterDashboard() {
   document.getElementById('logoutBtn').classList.remove('hidden');
 
   applyPermissions();
-  refreshReferenceData();
-  loadOverview();
+  loadOverview(); // one combined request — see loadOverview()'s comment above
+  startSessionTimer();
 }
 
 async function bootstrap() {
@@ -952,7 +1078,6 @@ async function bootstrap() {
     document.getElementById('authScreen').classList.remove('hidden');
     return;
   }
-  await refreshReferenceData();
 
   if (state.token && state.user) {
     try {
