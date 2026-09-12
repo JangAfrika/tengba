@@ -29,7 +29,7 @@
     <div class="sidebar-brand">
       <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
       <div class="brand-text">
-        <span class="brand-title">TENGBA GARDEN</span>
+        <span class="brand-title">TENGBA</span>
         <span class="brand-sub">Portal</span>
       </div>
     </div>
@@ -69,11 +69,11 @@
           <img src="assets/logo.png" alt="" class="logo" onerror="this.style.display='none'" />
           <div class="brand-text">
             <span class="brand-title">TENGBA GARDEN</span>
-            <span class="brand-sub">Portal</span>
+            <span class="brand-sub">login</span>
           </div>
         </div>
         <h2>Log in</h2>
-        <p class="hint">Contact IT admin if you forget password.</p>
+        <p class="hint">Contact IT admin if you need access or a password reset.</p>
         <form id="loginForm" class="form-stack">
           <div class="field">
             <label for="loginUsername">Username</label>
@@ -95,9 +95,29 @@
       <!-- OVERVIEW -->
       <section id="panel-overview" class="panel">
         <div class="surface">
-          <h2>Team overview</h2>
-          <p class="hint">Summary of activities, attendance, plans, and projects.</p>
-          <div class="table-wrap"><table id="overviewTable"><thead></thead><tbody></tbody></table></div>
+          <h2>Overview</h2>
+          <p class="hint">A snapshot across activity logs, daily reports, plans, and projects.</p>
+          <div class="card-grid stat-grid" id="overviewStats"></div>
+        </div>
+
+        <div class="surface">
+          <h2>Recent activity</h2>
+          <div class="card-grid" id="overviewActivity"></div>
+        </div>
+
+        <div class="surface">
+          <h2>Recent reports</h2>
+          <div class="card-grid" id="overviewReports"></div>
+        </div>
+
+        <div class="surface">
+          <h2>Recent plans</h2>
+          <div class="card-grid" id="overviewPlans"></div>
+        </div>
+
+        <div class="surface">
+          <h2>Recent projects</h2>
+          <div class="card-grid" id="overviewProjects"></div>
         </div>
       </section>
 
@@ -131,7 +151,7 @@
         <h2>Daily Report</h2>
         <button type="button" class="btn btn-add" data-toggle="reportForm" data-label="+ Report Today's Work">+ Report Today's Work</button>
       </div>
-      <p class="hint">A quick daily record visible to the whole team.</p>
+      <p class="hint">A quick daily report.</p>
       <form id="reportForm" class="grid-form hidden">
         <div class="field"><label>Date</label><input type="date" id="repDate" /></div>
         <div class="field span2"><label>Work done</label><input type="text" id="repWork" placeholder="e.g. Turned windrows 1–3, watered nursery beds" required /></div>
@@ -171,7 +191,7 @@
           </select>
         </div>
         <div class="field span2"><label>Notes</label><input type="text" id="attNotes" /></div>
-        <button type="submit" class="btn btn-filled">Mark attendance</button>
+        <button type="submit" class="btn btn-filled">Save attendance</button>
       </form>
       <p class="msg" id="attendanceMessage"></p>
     </div>
@@ -188,7 +208,7 @@
         <h2>Receipts</h2>
         <button type="button" class="btn btn-add" data-toggle="receiptForm" data-label="+ Upload Receipt">+ Upload Receipt</button>
       </div>
-      <p class="hint">Files are logged below.</p>
+      <p class="hint">Files are saved to the shared Drive receipts folder and logged below.</p>
       <form id="receiptForm" class="grid-form hidden">
         <div class="field"><label>Date</label><input type="date" id="rcDate" /></div>
         <div class="field">
@@ -319,7 +339,7 @@
         <h2 id="userFormTitle">Register a team member</h2>
         <button type="button" class="btn btn-add" data-toggle="userForm" data-label="+ Register User" id="userFormToggleBtn">+ Register User</button>
       </div>
-      <p class="hint" id="userFormHint">The Director can creates accounts.</p>
+      <p class="hint" id="userFormHint">The Director creates accounts.</p>
       <form id="userForm" class="grid-form hidden">
         <div class="field"><label>Full name</label><input type="text" id="uFullName" required /></div>
         <div class="field" id="uUsernameField"><label>Username</label><input type="text" id="uUsername" required autocomplete="off" /></div>
@@ -349,7 +369,7 @@
     </div>
     <div class="surface">
       <h2>Team profiles</h2>
-      <div class="table-wrap"><table id="usersTable"><thead></thead><tbody></tbody></table></div>
+      <div class="card-grid" id="usersTable"></div>
     </div>
 
     <div class="surface director-only hidden" id="roleFormCard">
@@ -367,7 +387,7 @@
     </div>
     <div class="surface director-only hidden" id="rolesTableCard">
       <h2>Roles</h2>
-      <div class="table-wrap"><table id="rolesTable"><thead></thead><tbody></tbody></table></div>
+      <div class="card-grid" id="rolesTable"></div>
     </div>
   </section>
 
@@ -377,13 +397,13 @@
       <div class="panel-head">
         <h2>My profile</h2>
       </div>
-      <p class="hint">Ask the Director to update anything that needs to change.</p>
+      <p class="hint">Contact IT admin to update anything that needs to change.</p>
       <dl class="profile-grid" id="profileGrid"></dl>
     </div>
   </section>
     </main>
 
-    <footer class="footer">TENGBA GARDEN — "Start Small. Grow Tall."</footer>
+    <footer class="footer">TENGBA — "Start Small. Grow Tall."</footer>
 
   </div><!-- /content-area -->
 </div><!-- /app-shell -->
