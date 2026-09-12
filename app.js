@@ -12,6 +12,7 @@
 
 const LS_TOKEN = 'tengba_token';
 const LS_USER = 'tengba_user';
+const LS_LAST_SEEN = 'tengba_last_seen';
 
 const state = {
   token: localStorage.getItem(LS_TOKEN) || '',
@@ -237,10 +238,19 @@ function clearLoginForm() {
 }
 
 function performLogout() {
+  // Fire-and-forget: tell the backend this session ended (for the Audit
+  // Log and the user's "Last Logout" stamp) using the token we're about
+  // to discard. Don't await it — logging out should feel instant, and
+  // this can't succeed anyway once the token below is cleared.
+  if (state.token) {
+    api('logout', {}).catch(function () { /* best-effort — never block sign-out on this */ });
+  }
+
   state.token = '';
   state.user = null;
   localStorage.removeItem(LS_TOKEN);
   localStorage.removeItem(LS_USER);
+  localStorage.removeItem(LS_LAST_SEEN);
   document.body.classList.remove('authed');
   closeSidebar();
   stopSessionTimer();
@@ -254,19 +264,49 @@ function performLogout() {
 document.getElementById('logoutBtn').addEventListener('click', performLogout);
 
 // ---------------------------------------------------------------
-// Session timeout — sign out automatically after 20 minutes with no
-// mouse, keyboard, touch, or scroll activity. A lightweight periodic
-// check (rather than resetting a timer on every mousemove) keeps this
-// cheap even on a slow device.
+// Session timeout — two separate protections:
+//
+// 1. In-tab inactivity: sign out after 20 minutes with no mouse,
+//    keyboard, touch, or scroll activity while the tab stays open. A
+//    lightweight periodic check (rather than resetting a timer on every
+//    mousemove) keeps this cheap even on a slow device.
+//
+// 2. Closed-browser timeout: a "last seen" timestamp is written to
+//    localStorage as a heartbeat while the app is open, and again the
+//    moment the tab is closed/hidden. If the app is reopened more than
+//    8 minutes after that timestamp — meaning the browser/tab was
+//    closed, not just idle in the background — the session is treated
+//    as expired and the person has to log in again, even though the
+//    login token itself might still technically be valid.
 // ---------------------------------------------------------------
-const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-const SESSION_CHECK_INTERVAL_MS = 10 * 1000;
+const SESSION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes, tab left open but idle
+const SESSION_CHECK_INTERVAL_MS = 7 * 1000;
+const CLOSED_SESSION_TIMEOUT_MS = 6 * 60 * 1000; // 6 minutes, browser/tab actually closed
 let lastActivityAt = Date.now();
+let lastPersistedSeenAt = 0;
 let sessionCheckHandle = null;
 
-function markActivity() { lastActivityAt = Date.now(); }
+function recordLastSeen() {
+  const now = Date.now();
+  lastPersistedSeenAt = now;
+  localStorage.setItem(LS_LAST_SEEN, String(now));
+}
+
+function markActivity() {
+  lastActivityAt = Date.now();
+  // Throttle the localStorage write — no need to persist on every single
+  // mousemove, just often enough that a closed-tab gap can be measured.
+  if (lastActivityAt - lastPersistedSeenAt > 5000) recordLastSeen();
+}
 ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (evt) {
   document.addEventListener(evt, markActivity, { passive: true });
+});
+// Catch the exact moment the tab is closed, backgrounded, or reloaded —
+// don't rely solely on the throttled heartbeat above for that instant.
+window.addEventListener('beforeunload', recordLastSeen);
+window.addEventListener('pagehide', recordLastSeen);
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden') recordLastSeen();
 });
 
 function startSessionTimer() {
@@ -276,7 +316,7 @@ function startSessionTimer() {
     if (Date.now() - lastActivityAt >= SESSION_TIMEOUT_MS) {
       stopSessionTimer();
       performLogout();
-      await showAlert('Session expired');
+      await showAlert('You were signed out after 20 minutes of inactivity. Log in again to continue.', 'Session expired');
     }
   }, SESSION_CHECK_INTERVAL_MS);
 }
@@ -311,6 +351,7 @@ function loadPanel(name) {
   if (name === 'zones') loadZones();
   if (name === 'inventory') loadInventory();
   if (name === 'team') { loadUsers(); loadRoles(); }
+  if (name === 'audit') loadAuditLog();
   if (name === 'profile') loadProfile();
 }
 
@@ -942,13 +983,14 @@ async function loadUsers() {
   state.users = res.users;
   const isDirector = state.user && state.user.role === 'Director';
 
-  const headers = ['Name', 'Role', 'Phone', 'Email', 'Skills', 'Languages', 'Positions & Responsibilities', 'Status'];
+  const headers = ['Name', 'Role', 'Phone', 'Email', 'Skills', 'Languages', 'Positions & Responsibilities', 'Last Login', 'Status'];
   if (isDirector) headers.push('Actions');
 
   const rowObjs = res.users.map(function (u) {
     const cells = [
       fmt(u['Full Name']), fmt(u.Role), fmt(u.Phone), fmt(u.Email),
       fmt(u.Skills), fmt(u.Languages), fmt(u['Positions Held & Responsibilities']),
+      fmt(u['Last Login']) || 'Never',
       statusPill(u.Status)
     ];
     if (isDirector) {
@@ -1006,6 +1048,20 @@ async function loadUsers() {
       } catch (err) { await showAlert(err.message, 'Could not remove user'); }
     });
   });
+}
+
+// ---------------------------------------------------------------
+// Audit Log — Director-only. Who logged in (and who failed to), when,
+// and what they did across the app. Tabular, newest first, same as the
+// other logs — this is a record to scan and search, not a directory.
+// ---------------------------------------------------------------
+async function loadAuditLog() {
+  const res = await api('getAuditLog', {});
+  if (!res.success) return;
+  const rows = res.audit.slice().reverse().map(function (r) {
+    return [fmt(r.Timestamp), fmt(r.Username) || '—', fmt(r.Role), fmt(r.Action), fmt(r.Details)];
+  });
+  renderTable('auditTable', ['Timestamp', 'User', 'Role', 'Action', 'Details'], rows);
 }
 
 // ---------------------------------------------------------------
@@ -1079,13 +1135,21 @@ async function bootstrap() {
     return;
   }
 
-  if (state.token && state.user) {
+  const hadSession = !!(state.token && state.user);
+  const lastSeen = Number(localStorage.getItem(LS_LAST_SEEN) || 0);
+  const closedTooLong = !!lastSeen && (Date.now() - lastSeen > CLOSED_SESSION_TIMEOUT_MS);
+
+  if (hadSession && !closedTooLong) {
     try {
       const res = await api('whoAmI', {});
       if (res.success) { enterDashboard(); return; }
     } catch (e) { /* fall through to login screen */ }
   }
-  document.getElementById('authScreen').classList.remove('hidden');
+
+  performLogout(); // clean slate either way — also shows the login screen
+  if (hadSession && closedTooLong) {
+    await showAlert('You were signed out because the app was closed for more than 8 minutes. Log in again to continue.', 'Session expired');
+  }
 }
 
 bootstrap();
