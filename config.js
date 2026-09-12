@@ -8,7 +8,7 @@
 // You do not need to change those two lines below.
 
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbylSKOIqvH-VmKVTO5ODW9d9YQ_8AK9NfXwaUaI4eSzQMAhvcBelKY5yptuf66DahX3fQ/exec', // e.g. https://script.google.com/macros/s/AKfycb.../exec
+  API_URL: 'https://script.google.com/macros/s/AKfycbyBODpEp_P_jnAxIaacxkrSQk2edgqk3LUUVT83MDxFFoH_gKRxh-Fln4CnG1QtQF_LNA/exec', // e.g. https://script.google.com/macros/s/AKfycb.../exec
 
   SPREADSHEET_ID: '1G9dUzuZTsdxsitkhu640Q-I0MQjN1gK3uNaZW2jYjms',
   RECEIPTS_FOLDER_ID: '1tXik6K7ONIFoy4LwXqa4phn4V2nCEHqX'
